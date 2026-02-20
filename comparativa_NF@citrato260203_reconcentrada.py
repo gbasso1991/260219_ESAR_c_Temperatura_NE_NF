@@ -128,31 +128,40 @@ SAR_300_100,SAR_300_125,SAR_300_150 = [],[],[]
 Hc_300_100,Hc_300_125,Hc_300_150 = [],[],[]
 Mr_300_100,Mr_300_125,Mr_300_150 = [],[],[]
 
+dphi_300_100,dphi_300_125,dphi_300_150 = [],[],[]
+mag_fund_300_100,mag_fund_300_125,mag_fund_300_150 = [],[],[]
+
 for f in resultados_300:
     if '100dA' in f:
-        meta,_,t,T,Mr,Hc,_,_,_,_,_,_,SAR,tau,_ = lector_resultados(f)
+        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,SAR,tau,_ = lector_resultados(f)
         t_300_100.append(t-t[0])
         T_300_100.append(T)
         tau_300_100.append(tau)
         SAR_300_100.append(SAR)
         Mr_300_100.append(Mr)
         Hc_300_100.append(Hc)
+        dphi_300_100.append(dphi)
+        mag_fund_300_100.append(mag)
     elif '125dA' in f:
-        meta,_,t,T,Mr,Hc,_,_,_,_,_,_,SAR,tau,_ = lector_resultados(f)
+        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,SAR,tau,_ = lector_resultados(f)
         t_300_125.append(t-t[0])
         T_300_125.append(T)
         tau_300_125.append(tau)
         SAR_300_125.append(SAR)
         Mr_300_125.append(Mr)
         Hc_300_125.append(Hc)
+        dphi_300_125.append(dphi)
+        mag_fund_300_125.append(mag)
     elif '150dA' in f:
-        meta,_,t,T,Mr,Hc,_,_,_,_,_,_,SAR,tau,_ = lector_resultados(f)
+        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,SAR,tau,_ = lector_resultados(f)
         t_300_150.append(t-t[0])
         T_300_150.append(T)
         tau_300_150.append(tau)
         SAR_300_150.append(SAR)
         Mr_300_150.append(Mr)
         Hc_300_150.append(Hc)
+        dphi_300_150.append(dphi)
+        mag_fund_300_150.append(mag)
 
 #%% Tau vs t / T
 fig1, ((ax,axa),(ax2,axb),(ax3,axc)) = plt.subplots(nrows=3,ncols=2,figsize=(12,8),constrained_layout=True,sharex='col',sharey='row')
@@ -351,9 +360,89 @@ for a in [ax,ax2,ax3]:
     a.set_ylabel("Mr (A/m)")
 plt.suptitle('Mr vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
 plt.show()
+#%% dphi vs t/T
+fig6, ((ax,axa),(ax2,axb),(ax3,axc)) = plt.subplots(nrows=3,ncols=2,figsize=(12,8),constrained_layout=True,sharex='col',sharey='row')
 
-#%% Salvo las figuras
-for f in zip([fig1,fig2,fig3,fig4,fig5],['tau_vs_t&T','SAR_vs_t&T','templogs','Hc_vs_t&T','Mr_vs_t&T']):
+ax.plot(t_300_100[0],dphi_300_100[0],'.-')
+ax.plot(t_300_100[1],dphi_300_100[1],'.-')
+ax.plot(t_300_100[2],dphi_300_100[2],'.-')
+
+ax2.plot(t_300_125[0],dphi_300_125[0],'.-')
+ax2.plot(t_300_125[1],dphi_300_125[1],'.-')
+ax2.plot(t_300_125[2],dphi_300_125[2],'.-')
+
+ax3.plot(t_300_150[0],dphi_300_150[0],'.-')
+ax3.plot(t_300_150[1],dphi_300_150[1],'.-')
+ax3.plot(t_300_150[2],dphi_300_150[2],'.-') 
+
+axa.plot(T_300_100[0],dphi_300_100[0],'.-')
+axa.plot(T_300_100[1],dphi_300_100[1],'.-')
+axa.plot(T_300_100[2],dphi_300_100[2],'.-')
+
+axb.plot(T_300_125[0],dphi_300_125[0],'.-')
+axb.plot(T_300_125[1],dphi_300_125[1],'.-')
+axb.plot(T_300_125[2],dphi_300_125[2],'.-')
+
+axc.plot(T_300_150[0],dphi_300_150[0],'.-')
+axc.plot(T_300_150[1],dphi_300_150[1],'.-')    
+axc.plot(T_300_150[2],dphi_300_150[2],'.-')    
+
+ax.set_title('dphi - 38 kA/m',loc='left')
+ax2.set_title('dphi - 47 kA/m',loc='left')
+ax3.set_title('dphi - 57 kA/m',loc='left')
+ax3.set_xlabel("t (s)")
+axc.set_xlabel("T (°C)")
+
+for a in [ax,ax2,ax3,axa,axb,axc]:    
+    a.grid()
+    #a.legend(title="Frecuencia (kHz)",ncol=2)
+for a in [ax,ax2,ax3]:
+    a.set_ylabel("dphi (rad)")
+plt.suptitle('dphi vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
+plt.show()
+#%% Magnitud del armonico fundamental vs t/T
+fig7, ((ax,axa),(ax2,axb),(ax3,axc)) = plt.subplots(nrows=3,ncols=2,figsize=(12,8),constrained_layout=True,sharex='col',sharey='row')
+
+ax.plot(t_300_100[0],mag_fund_300_100[0],'.-')
+ax.plot(t_300_100[1],mag_fund_300_100[1],'.-')
+ax.plot(t_300_100[2],mag_fund_300_100[2],'.-')
+
+ax2.plot(t_300_125[0],mag_fund_300_125[0],'.-')
+ax2.plot(t_300_125[1],mag_fund_300_125[1],'.-')
+ax2.plot(t_300_125[2],mag_fund_300_125[2],'.-')
+
+ax3.plot(t_300_150[0],mag_fund_300_150[0],'.-')
+ax3.plot(t_300_150[1],mag_fund_300_150[1],'.-')
+ax3.plot(t_300_150[2],mag_fund_300_150[2],'.-') 
+
+axa.plot(T_300_100[0],mag_fund_300_100[0],'.-')
+axa.plot(T_300_100[1],mag_fund_300_100[1],'.-')
+axa.plot(T_300_100[2],mag_fund_300_100[2],'.-')
+
+axb.plot(T_300_125[0],mag_fund_300_125[0],'.-')
+axb.plot(T_300_125[1],mag_fund_300_125[1],'.-')
+axb.plot(T_300_125[2],mag_fund_300_125[2],'.-')
+
+axc.plot(T_300_150[0],mag_fund_300_150[0],'.-')
+axc.plot(T_300_150[1],mag_fund_300_150[1],'.-')    
+axc.plot(T_300_150[2],mag_fund_300_150[2],'.-')    
+
+ax.set_title('Mag del armonico fund - 38 kA/m',loc='left')
+ax2.set_title('Mag del armonico fund - 47 kA/m',loc='left')
+ax3.set_title('Mag del armonico fund - 57 kA/m',loc='left')
+ax3.set_xlabel("t (s)")
+axc.set_xlabel("T (°C)")
+
+for a in [ax,ax2,ax3,axa,axb,axc]:    
+    a.grid()
+    #a.legend(title="Frecuencia (kHz)",ncol=2)
+for a in [ax,ax2,ax3]:
+    a.set_ylabel("Magnitud del armonico fundamental")
+plt.suptitle('Mag vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
+plt.show()
+
+#%% Salvo todas las figuras
+for f in zip([fig1,fig2,fig3,fig4,fig5,fig6,fig7],['tau_vs_t&T','SAR_vs_t&T','templogs','Hc_vs_t&T','Mr_vs_t&T','dphi_vs_t&T','Mag_vs_t&T']):
     f[0].savefig('NF_citrato_reconc_300_'+f[1]+'.png')
 
 

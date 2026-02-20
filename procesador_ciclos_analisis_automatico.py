@@ -584,30 +584,34 @@ for k in range(len(fnames_m)):
     '''
     Ploteo ciclo de histeresis individual
     '''
-    if graficos['Ciclo_HM_m']==1:
-        
-        cmap = mpl.colormaps['viridis']
-        norm = plt.Normalize(temp_m.min(), temp_m.max())# Crear un rango de colores basado en las temperaturas y el cmap
-        #color = cmap(norm(temp_m[k]))
-        output_dir_ciclos= os.path.join(output_dir,'ciclos_H_M')
-        if not os.path.exists(output_dir_ciclos):# Crear el subdirectorio si no existe
-            os.makedirs(output_dir_ciclos)
-            
-        fig , ax =plt.subplots(figsize=(7,5.5), constrained_layout=True)
-        ax.plot(campo_m,magnetizacion_m,'.-',label=f'{fnames_m[k].split("_")[-1].split(".txt")[0][5:]}')
-        ax.plot(campo_m,magnetizacion_m_filtrada,label=f'{fnames_m[k].split("_")[-1].split(".txt")[0][5:]} ({N_armonicos_impares} armónicos)')
-        ax.scatter(0,Mr_mean,marker='s',c='tab:orange',label=f'M$_r$ = {Mr_mean:.0f} A/m')
-        ax.scatter(Hc_mean,0,marker='s',c='tab:orange',label=f'H$_c$ = {Hc_mean:.0f} A/m')
-        # ax.plot(campo_m,magnetizacion_m_filtrada_fase,label='Muestra filtrada s/fase')
-        plt.legend(loc='best')
-        plt.grid()
-        plt.xlabel('H $(A/m)$')
-        plt.ylabel('M $(A/m)$')
-        plt.title('Ciclo de histéresis de la muestra\n'+fnames_m[k][:-4])
-        plt.text(0.75,0.25,f'T = °C\nSAR = {sar:0.1f} W/g',fontsize=13,bbox=dict(color='tab:red',alpha=0.6),
-                 va='center',ha='center',transform=ax.transAxes)
-        plt.savefig(os.path.join(output_dir_ciclos,fnames_m[k][:-4])+'_ciclo_H_M.png',dpi=200,facecolor='w')
-        plt.close(fig)
+    if (graficos['Ciclo_HM_m']==1) and (k!= len(fnames_m)):
+        try:
+            cmap = mpl.colormaps['viridis']
+            norm = plt.Normalize(temp_m.min(), temp_m.max())# Crear un rango de colores basado en las temperaturas y el cmap
+            color = cmap(norm(temp_m[k]))
+            output_dir_ciclos= os.path.join(output_dir,'ciclos_H_M')
+            if not os.path.exists(output_dir_ciclos):# Crear el subdirectorio si no existe
+                os.makedirs(output_dir_ciclos)
+                
+            fig , ax =plt.subplots(figsize=(7,5.5), constrained_layout=True)
+            ax.plot(campo_m,magnetizacion_m,'.-',label=f'{fnames_m[k].split("_")[-1].split(".txt")[0][5:]}')
+            ax.plot(campo_m,magnetizacion_m_filtrada,label=f'{fnames_m[k].split("_")[-1].split(".txt")[0][5:]} ({N_armonicos_impares} armónicos)')
+            ax.scatter(0,Mr_mean,marker='s',c='tab:orange',label=f'M$_r$ = {Mr_mean:.0f} A/m')
+            ax.scatter(Hc_mean,0,marker='s',c='tab:orange',label=f'H$_c$ = {Hc_mean:.0f} A/m')
+            # ax.plot(campo_m,magnetizacion_m_filtrada_fase,label='Muestra filtrada s/fase')
+            plt.legend(loc='best')
+            plt.grid()
+            plt.xlabel('H $(A/m)$')
+            plt.ylabel('M $(A/m)$')
+            plt.title('Ciclo de histéresis de la muestra\n'+fnames_m[k][:-4])
+            plt.text(0.75,0.25,f'T = {temp_m[k]:.1f} °C\nSAR = {sar:0.1f} W/g',fontsize=13,bbox=dict(color='tab:red',alpha=0.6),
+                    va='center',ha='center',transform=ax.transAxes)
+            plt.savefig(os.path.join(output_dir_ciclos,fnames_m[k][:-4])+'_ciclo_H_M.png',dpi=200,facecolor='w')
+            plt.close(fig)
+        except IndexError:
+            #print(f'IndxError en la exportacion de {fnames_m[k]}')
+            pass
+                
     # Xi Susceptibilidad a M=0 (excepto ultimo archivo que es el control de descancelacion)
     if k != len(fnames_m):
         if graficos['Susceptibilidad_M_0']==1:
