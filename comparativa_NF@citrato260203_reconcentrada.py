@@ -7,7 +7,7 @@ from glob import glob
 import os
 import chardet
 import re
-#%% LEctor de resultados
+#%% Lector de resultados
 def lector_resultados(path):
     '''
     Para levantar archivos de resultados con columnas :
@@ -118,7 +118,7 @@ resultados_300 = glob("**/**/*resultados.txt")
 resultados_300.sort()
 for p in resultados_300:
     print(p)
-#%%
+
 t_300_100,t_300_125,t_300_150 = [],[],[]
 T_300_100,T_300_125,T_300_150 = [],[],[]
 
@@ -249,19 +249,39 @@ plt.show()
 
 #%% Temp vs tiempo
 
-fig3,(ax,ax2,ax3) = plt.subplots(3,1,figsize=(9,7),constrained_layout=True)
+rate_150_1 = (T_300_150[0][-1]-T_300_150[0][0])/t_300_150[0][-1]
+rate_150_2 = (T_300_150[1][-1]-T_300_150[1][0])/t_300_150[1][-1]
+rate_150_3 = (T_300_150[2][-1]-T_300_150[2][0])/t_300_150[2][-1]
+rate_125_1 = (T_300_125[0][-1]-T_300_125[0][0])/t_300_125[0][-1]
+rate_125_2 = (T_300_125[1][-1]-T_300_125[1][0])/t_300_125[1][-1]
+rate_125_3 = (T_300_125[2][-1]-T_300_125[2][0])/t_300_125[2][-1]
+rate_100_1 = (T_300_100[0][-1]-T_300_100[0][0])/t_300_100[0][-1]
+rate_100_2 = (T_300_100[1][-1]-T_300_100[1][0])/t_300_100[1][-1]
+rate_100_3 = (T_300_100[2][-1]-T_300_100[2][0])/t_300_100[2][-1]
 
-ax.plot(t_300_100[0],T_300_100[0],'.-')
-ax.plot(t_300_100[1],T_300_100[1],'.-')
-ax.plot(t_300_100[2],T_300_100[2],'.-')
+rates_150 =np.array([rate_150_1,rate_150_2,rate_150_3])
+rates_125 =np.array([rate_125_1,rate_125_2,rate_125_3]) 
+rates_100 =np.array([rate_100_1,rate_100_2,rate_100_3])
 
-ax2.plot(t_300_125[0],T_300_125[0],'.-')
-ax2.plot(t_300_125[1],T_300_125[1],'.-')
-ax2.plot(t_300_125[2],T_300_125[2],'.-')
+rate_100=ufloat(rates_100.mean(),rates_100.std())
+rate_125=ufloat(rates_125.mean(),rates_125.std())
+rate_150=ufloat(rates_150.mean(),rates_150.std())
 
-ax3.plot(t_300_150[0],T_300_150[0],'.-')
-ax3.plot(t_300_150[1],T_300_150[1],'.-')
-ax3.plot(t_300_150[2],T_300_150[2],'.-')
+for r in (rate_100,rate_125,rate_150):
+    print(f'{r:.1uS} °C/s')
+fig3,(ax,ax2,ax3) = plt.subplots(3,1,figsize=(11,8),constrained_layout=True)
+
+ax.plot(t_300_100[0],T_300_100[0],'.-',label=f'$\Delta$t = {t_300_100[0][-1]:.1f} s - $\Delta$T = {T_300_100[0][-1]-T_300_100[0][0]:.1f} °C\n raw WR = {rate_100_1:.2f} °C\s')
+ax.plot(t_300_100[1],T_300_100[1],'.-',label=f'$\Delta$t = {t_300_100[1][-1]:.1f} s - $\Delta$T = {T_300_100[1][-1]-T_300_100[1][0]:.1f} °C\n raw WR = {rate_100_2:.2f} °C\s')
+ax.plot(t_300_100[2],T_300_100[2],'.-',label=f'$\Delta$t = {t_300_100[2][-1]:.1f} s - $\Delta$T = {T_300_100[2][-1]-T_300_100[2][0]:.1f} °C\n raw WR = {rate_100_3:.2f} °C\s')
+
+ax2.plot(t_300_125[0],T_300_125[0],'.-',label=f'$\Delta$t = {t_300_125[0][-1]:.1f} s - $\Delta$T = {T_300_125[0][-1]-T_300_125[0][0]:.1f} °C\n raw WR = {rate_125_1:.2f} °C\s')
+ax2.plot(t_300_125[1],T_300_125[1],'.-',label=f'$\Delta$t = {t_300_125[1][-1]:.1f} s - $\Delta$T = {T_300_125[1][-1]-T_300_125[1][0]:.1f} °C\n raw WR = {rate_125_2:.2f} °C\s')
+ax2.plot(t_300_125[2],T_300_125[2],'.-',label=f'$\Delta$t = {t_300_125[2][-1]:.1f} s - $\Delta$T = {T_300_125[1][-1]-T_300_125[2][0]:.1f} °C\n raw WR = {rate_125_3:.2f} °C\s')
+
+ax3.plot(t_300_150[0],T_300_150[0],'.-',label=f'$\Delta$t = {t_300_150[0][-1]:.1f} s - $\Delta$T = {T_300_150[0][-1]-T_300_150[0][0]:.1f} °C\n raw WR = {rate_150_1:.2f} °C\s')
+ax3.plot(t_300_150[1],T_300_150[1],'.-',label=f'$\Delta$t = {t_300_150[1][-1]:.1f} s - $\Delta$T = {T_300_150[1][-1]-T_300_150[1][0]:.1f} °C\n raw WR = {rate_150_2:.2f} °C\s')
+ax3.plot(t_300_150[2],T_300_150[2],'.-',label=f'$\Delta$t = {t_300_150[2][-1]:.1f} s - $\Delta$T = {T_300_150[2][-1]-T_300_150[2][0]:.1f} °C\n raw WR = {rate_150_3:.2f} °C\s')
 
 ax.set_title('Temperatura - 38 kA/m',loc='left')    
 ax2.set_title('Temperatura - 47 kA/m',loc='left')
@@ -273,6 +293,7 @@ for a in [ax,ax2,ax3]:
     a.set_ylabel("T (°C)")
     a.set_xlim(0,)
     a.set_ylim(20,90)
+    a.legend(ncol=3)
 plt.suptitle('Temperatura  vs t\nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
 plt.show()
 
