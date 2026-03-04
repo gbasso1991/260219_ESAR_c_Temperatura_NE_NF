@@ -205,6 +205,25 @@ for a in [ax,ax2,ax3]:
 plt.suptitle('tau vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
 plt.show()
 #%% SAR vs t / T
+SAR_100_all = np.concatenate([SAR_300_100[0],SAR_300_100[1],SAR_300_100[2]])
+SAR_100_mean = np.mean(SAR_100_all)
+SAR_100_std = np.std(SAR_100_all, ddof=1) 
+SAR_100_prom = ufloat(SAR_100_mean,SAR_100_std)
+print(f'ESAR 100 = {SAR_100_prom:.2uS} W/g')
+
+SAR_125_all = np.concatenate([SAR_300_125[0],SAR_300_125[1],SAR_300_125[2]])
+SAR_125_mean = np.mean(SAR_125_all)
+SAR_125_std = np.std(SAR_125_all, ddof=1) 
+SAR_125_prom = ufloat(SAR_125_mean,SAR_125_std)
+print(f'ESAR 125 = {SAR_125_prom:.2uS} W/g')
+
+SAR_150_all = np.concatenate([SAR_300_150[0],SAR_300_150[1],SAR_300_150[2]])
+SAR_150_mean = np.mean(SAR_150_all)
+SAR_150_std = np.std(SAR_150_all, ddof=1) 
+SAR_150_prom = ufloat(SAR_150_mean,SAR_150_std)
+print(f'ESAR 150 = {SAR_150_prom:.2uS} W/g')
+
+
 fig2, ((ax,axa),(ax2,axb),(ax3,axc)) = plt.subplots(nrows=3,ncols=2,figsize=(12,8),constrained_layout=True,sharex='col',sharey='row')
 
 ax.plot(t_300_100[0],SAR_300_100[0],'.-')
@@ -219,7 +238,6 @@ ax3.plot(t_300_150[0],SAR_300_150[0],'.-')
 ax3.plot(t_300_150[1],SAR_300_150[1],'.-')
 ax3.plot(t_300_150[2],SAR_300_150[2],'.-')
 
-
 axa.plot(T_300_100[0],SAR_300_100[0],'.-')
 axa.plot(T_300_100[1],SAR_300_100[1],'.-')
 axa.plot(T_300_100[2],SAR_300_100[2],'.-')
@@ -232,7 +250,6 @@ axc.plot(T_300_150[0],SAR_300_150[0],'.-')
 axc.plot(T_300_150[1],SAR_300_150[1],'.-')
 axc.plot(T_300_150[2],SAR_300_150[2],'.-')
 
-
 ax.set_title('SAR - 38 kA/m',loc='left')
 ax2.set_title('SAR - 47 kA/m',loc='left')
 ax3.set_title('SAR - 57 kA/m',loc='left')
@@ -241,9 +258,23 @@ axc.set_xlabel("T (°C)")
 
 for a in [ax,ax2,ax3,axa,axb,axc]:
     a.grid()
-    #a.legend(title="Frecuencia (kHz)",ncol=2)
+    #a.legend(title='SAR (W/g)')
 for a in [ax,ax2,ax3]:
     a.set_ylabel("SAR (W/g)")
+
+ax.text(0.95,0.90,f'SAR = {SAR_100_prom:.2uS} W/g',
+        ha='right',va='center',
+        bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
+        transform=ax.transAxes)
+ax2.text(0.95,0.90,f'SAR = {SAR_125_prom:.2uS} W/g',
+        ha='right',va='center',
+        bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
+        transform=ax2.transAxes)
+ax3.text(0.95,0.90,f'SAR = {SAR_150_prom:.2uS} W/g',
+        ha='right',va='center',
+        bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
+        transform=ax3.transAxes)    
+
 plt.suptitle('SAR vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
 plt.show()
 
@@ -269,6 +300,18 @@ rate_150=ufloat(rates_150.mean(),rates_150.std())
 
 for r in (rate_100,rate_125,rate_150):
     print(f'{r:.1uS} °C/s')
+    
+#ecSAR a partir del raw warming rate
+ecSAR_150 = rate_150*4186/15 
+ecSAR_125 = rate_125*4186/15    
+ecSAR_100 = rate_100*4186/15
+
+
+print(f'ecSAR 100 = {ecSAR_100:.2uS} W/g')
+print(f'ecSAR 125 = {ecSAR_125:.2uS} W/g')
+print(f'ecSAR 150 = {ecSAR_150:.2uS} W/g')
+
+    
 fig3,(ax,ax2,ax3) = plt.subplots(3,1,figsize=(11,8),constrained_layout=True)
 
 ax.plot(t_300_100[0],T_300_100[0],'.-',label=f'$\Delta$t = {t_300_100[0][-1]:.1f} s - $\Delta$T = {T_300_100[0][-1]-T_300_100[0][0]:.1f} °C\n raw WR = {rate_100_1:.2f} °C\s')
@@ -288,6 +331,22 @@ ax2.set_title('Temperatura - 47 kA/m',loc='left')
 ax3.set_title('Temperatura - 57 kA/m',loc='left')
 ax3.set_xlabel("t (t)")
 
+
+ax.text(0.02,0.90,rf'$\Delta$T/$\Delta$t = {rate_100:.1uS} °C/s'+f'\necSAR = {ecSAR_100:.2uS} W/g',
+        bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
+        ha='left',va='top',
+        transform=ax.transAxes)
+
+ax2.text(0.02,0.90,rf'$\Delta$T/$\Delta$t = {rate_125:.1uS} °C/s'+f'\necSAR = {ecSAR_125:.2uS} W/g',
+        bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
+        ha='left',va='top',
+        transform=ax2.transAxes)
+
+ax3.text(0.02,0.90,rf'$\Delta$T/$\Delta$t = {rate_150:.1uS} °C/s'+f'\necSAR = {ecSAR_150:.2uS} W/g',
+        bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
+        ha='left',va='top',
+        transform=ax3.transAxes)
+
 for a in [ax,ax2,ax3]:
     a.grid()
     a.set_ylabel("T (°C)")
@@ -296,6 +355,40 @@ for a in [ax,ax2,ax3]:
     a.legend(ncol=3)
 plt.suptitle('Temperatura  vs t\nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
 plt.show()
+#%% Ploteo comparativa ESAR ecSAR
+campo= [38 , 47 , 57]
+ESAR = [SAR_100_prom,SAR_125_prom,SAR_150_prom]
+ecSAR = [ecSAR_100,ecSAR_125,ecSAR_150]
+
+SAR_100_plot = [ufloat(np.mean(s),np.std(s)) for s in SAR_300_100 ]
+SAR_125_plot = [ufloat(np.mean(s),np.std(s)) for s in SAR_300_125 ]
+SAR_150_plot = [ufloat(np.mean(s),np.std(s)) for s in SAR_300_150 ]
+
+H_57= [57,57,57]
+H_47= [47,47,47]
+H_38= [38,38,38]
+
+
+
+fig,ax=plt.subplots(nrows=1,ncols=1,figsize=(10,5),constrained_layout=True)
+
+# ax.errorbar(x=H_38,y=[s.n for s in SAR_100_plot],yerr=[s.s for s in SAR_100_plot],fmt='.-',capsize=3,label='ESAR 38 kA/m')
+# ax.errorbar(x=H_47,y=[s.n for s in SAR_125_plot],yerr=[s.s for s in SAR_125_plot],fmt='.-',capsize=3,label='ESAR 47 kA/m')
+# ax.errorbar(x=H_57,y=[s.n for s in SAR_150_plot],yerr=[s.s for s in SAR_150_plot],fmt='.-',capsize=3,label='ESAR 57 kA/m')
+
+
+ax.errorbar(x=campo,y=[e.n for e in ESAR],yerr=[e.s for e in ESAR],fmt='.-',capsize=5,label='ESAR')
+ax.errorbar(x=campo,y=[c.n for c in ecSAR],yerr=[c.s for c in ecSAR],fmt='.-',capsize=5,label='ecSAR')
+
+ax.set_xticks(campo)
+ax.set_title('ESAR vs ecSAR \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')
+ax.grid()
+ax.legend(ncol=2)
+ax.set_xlabel("H (kA/m)")
+ax.set_ylabel("SAR (W/g)")
+plt.savefig('ESAR_vs_ecSAR_NF@citrato_reconc_15_gL.png',dpi=300)
+
+
 
 #%% Hc vs t/ T
 
