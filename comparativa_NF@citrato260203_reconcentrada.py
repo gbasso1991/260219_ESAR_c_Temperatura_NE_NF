@@ -114,7 +114,7 @@ def lector_ciclos(filepath):
 
     return t,H_Vs,M_Vs,H_kAm,M_Am,metadata
 #%% Extraigo valores de las tablas de resultados todo a 300 kHz
-resultados_300 = glob("**/**/*resultados.txt")
+resultados_300 = glob("data/**/**/**/*resultados.txt")
 resultados_300.sort()
 for p in resultados_300:
     print(p)
@@ -123,7 +123,7 @@ t_300_100,t_300_125,t_300_150 = [],[],[]
 T_300_100,T_300_125,T_300_150 = [],[],[]
 
 tau_300_100,tau_300_125,tau_300_150 = [],[],[]
-SAR_300_100,SAR_300_125,SAR_300_150 = [],[],[]
+ESAR_300_100,ESAR_300_125,ESAR_300_150 = [],[],[]
 
 Hc_300_100,Hc_300_125,Hc_300_150 = [],[],[]
 Mr_300_100,Mr_300_125,Mr_300_150 = [],[],[]
@@ -133,35 +133,69 @@ mag_fund_300_100,mag_fund_300_125,mag_fund_300_150 = [],[],[]
 
 for f in resultados_300:
     if '100dA' in f:
-        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,SAR,tau,_ = lector_resultados(f)
+        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,ESAR,tau,_ = lector_resultados(f)
         t_300_100.append(t-t[0])
         T_300_100.append(T)
         tau_300_100.append(tau)
-        SAR_300_100.append(SAR)
+        ESAR_300_100.append(ESAR)
         Mr_300_100.append(Mr)
         Hc_300_100.append(Hc)
         dphi_300_100.append(dphi)
         mag_fund_300_100.append(mag)
     elif '125dA' in f:
-        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,SAR,tau,_ = lector_resultados(f)
+        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,ESAR,tau,_ = lector_resultados(f)
         t_300_125.append(t-t[0])
         T_300_125.append(T)
         tau_300_125.append(tau)
-        SAR_300_125.append(SAR)
+        ESAR_300_125.append(ESAR)
         Mr_300_125.append(Mr)
         Hc_300_125.append(Hc)
         dphi_300_125.append(dphi)
         mag_fund_300_125.append(mag)
     elif '150dA' in f:
-        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,SAR,tau,_ = lector_resultados(f)
+        meta,_,t,T,Mr,Hc,_,_,_,_,mag,dphi,ESAR,tau,_ = lector_resultados(f)
         t_300_150.append(t-t[0])
         T_300_150.append(T)
         tau_300_150.append(tau)
-        SAR_300_150.append(SAR)
+        ESAR_300_150.append(ESAR)
         Mr_300_150.append(Mr)
         Hc_300_150.append(Hc)
         dphi_300_150.append(dphi)
         mag_fund_300_150.append(mag)
+
+#%% Ploteo Ciclos Promedio 
+ciclos_NF = glob("data/**/**/**/*ciclo_promedio_H_M.txt") 
+ciclos_NF.sort()
+conc_NF = 15.0 #g/L
+
+fig00, (ax,ax2,ax3) = plt.subplots(1,3,figsize=(15,5),constrained_layout=True,sharey=True,sharex=True)
+
+for i,e in enumerate(ciclos_NF):
+    if '100dA' in e:
+        _,_,_, H_NF,M_NF,_ = lector_ciclos(ciclos_NF[i])
+        ax.plot(H_NF/1000,M_NF,'-',label=f'NF{i}')
+
+for i,e in enumerate(ciclos_NF):
+    if '125dA' in e:
+        _,_,_, H_NF,M_NF,_ = lector_ciclos(ciclos_NF[i])
+        ax2.plot(H_NF/1000,M_NF,'-',label=f'NF{i}')
+
+for i,e in enumerate(ciclos_NF):
+    if '150dA' in e:
+        _,_,_, H_NF,M_NF,_ = lector_ciclos(ciclos_NF[i])
+        ax3.plot(H_NF/1000,M_NF,'-',label=f'NF{i}')
+
+ax.set_ylabel('M (A/m)')
+ax.set_title('38 kA/m',loc='left')
+ax2.set_title('47 kA/m',loc='left')
+ax3.set_title('57 kA/m',loc='left')
+
+for a in ax,ax2,ax3:
+    a.grid()
+    a.set_xlabel('H (kA/m)')
+    a.legend(loc='upper left')
+plt.suptitle(f'Comparativa ciclos promedio NF@cit\n300 kHz  {conc_NF} g/L')
+plt.savefig('NF_citrato_reconc_300_ciclos_38_47_57.png')
 
 #%% Tau vs t / T
 fig1, ((ax,axa),(ax2,axb),(ax3,axc)) = plt.subplots(nrows=3,ncols=2,figsize=(12,8),constrained_layout=True,sharex='col',sharey='row')
@@ -204,78 +238,78 @@ for a in [ax,ax2,ax3]:
     a.set_ylabel("τ (ns)")
 plt.suptitle('tau vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
 plt.show()
-#%% SAR vs t / T
-SAR_100_all = np.concatenate([SAR_300_100[0],SAR_300_100[1],SAR_300_100[2]])
-SAR_100_mean = np.mean(SAR_100_all)
-SAR_100_std = np.std(SAR_100_all, ddof=1) 
-SAR_100_prom = ufloat(SAR_100_mean,SAR_100_std)
-print(f'ESAR 100 = {SAR_100_prom:.2uS} W/g')
+#%% ESAR vs t / T
+ESAR_100_all = np.concatenate([ESAR_300_100[0],ESAR_300_100[1],ESAR_300_100[2]])
+ESAR_100_mean = np.mean(ESAR_100_all)
+ESAR_100_std = np.std(ESAR_100_all, ddof=1) 
+ESAR_100_prom = ufloat(ESAR_100_mean,ESAR_100_std)
+print(f'ESAR 100 = {ESAR_100_prom:.2uS} W/g')
 
-SAR_125_all = np.concatenate([SAR_300_125[0],SAR_300_125[1],SAR_300_125[2]])
-SAR_125_mean = np.mean(SAR_125_all)
-SAR_125_std = np.std(SAR_125_all, ddof=1) 
-SAR_125_prom = ufloat(SAR_125_mean,SAR_125_std)
-print(f'ESAR 125 = {SAR_125_prom:.2uS} W/g')
+ESAR_125_all = np.concatenate([ESAR_300_125[0],ESAR_300_125[1],ESAR_300_125[2]])
+ESAR_125_mean = np.mean(ESAR_125_all)
+ESAR_125_std = np.std(ESAR_125_all, ddof=1) 
+ESAR_125_prom = ufloat(ESAR_125_mean,ESAR_125_std)
+print(f'ESAR 125 = {ESAR_125_prom:.2uS} W/g')
 
-SAR_150_all = np.concatenate([SAR_300_150[0],SAR_300_150[1],SAR_300_150[2]])
-SAR_150_mean = np.mean(SAR_150_all)
-SAR_150_std = np.std(SAR_150_all, ddof=1) 
-SAR_150_prom = ufloat(SAR_150_mean,SAR_150_std)
-print(f'ESAR 150 = {SAR_150_prom:.2uS} W/g')
+ESAR_150_all = np.concatenate([ESAR_300_150[0],ESAR_300_150[1],ESAR_300_150[2]])
+ESAR_150_mean = np.mean(ESAR_150_all)
+ESAR_150_std = np.std(ESAR_150_all, ddof=1) 
+ESAR_150_prom = ufloat(ESAR_150_mean,ESAR_150_std)
+print(f'ESAR 150 = {ESAR_150_prom:.2uS} W/g')
 
 
 fig2, ((ax,axa),(ax2,axb),(ax3,axc)) = plt.subplots(nrows=3,ncols=2,figsize=(12,8),constrained_layout=True,sharex='col',sharey='row')
 
-ax.plot(t_300_100[0],SAR_300_100[0],'.-')
-ax.plot(t_300_100[1],SAR_300_100[1],'.-')
-ax.plot(t_300_100[2],SAR_300_100[2],'.-')
+ax.plot(t_300_100[0],ESAR_300_100[0],'.-')
+ax.plot(t_300_100[1],ESAR_300_100[1],'.-')
+ax.plot(t_300_100[2],ESAR_300_100[2],'.-')
 
-ax2.plot(t_300_125[0],SAR_300_125[0],'.-')
-ax2.plot(t_300_125[1],SAR_300_125[1],'.-')
-ax2.plot(t_300_125[2],SAR_300_125[2],'.-')
+ax2.plot(t_300_125[0],ESAR_300_125[0],'.-')
+ax2.plot(t_300_125[1],ESAR_300_125[1],'.-')
+ax2.plot(t_300_125[2],ESAR_300_125[2],'.-')
 
-ax3.plot(t_300_150[0],SAR_300_150[0],'.-')
-ax3.plot(t_300_150[1],SAR_300_150[1],'.-')
-ax3.plot(t_300_150[2],SAR_300_150[2],'.-')
+ax3.plot(t_300_150[0],ESAR_300_150[0],'.-')
+ax3.plot(t_300_150[1],ESAR_300_150[1],'.-')
+ax3.plot(t_300_150[2],ESAR_300_150[2],'.-')
 
-axa.plot(T_300_100[0],SAR_300_100[0],'.-')
-axa.plot(T_300_100[1],SAR_300_100[1],'.-')
-axa.plot(T_300_100[2],SAR_300_100[2],'.-')
+axa.plot(T_300_100[0],ESAR_300_100[0],'.-')
+axa.plot(T_300_100[1],ESAR_300_100[1],'.-')
+axa.plot(T_300_100[2],ESAR_300_100[2],'.-')
 
-axb.plot(T_300_125[0],SAR_300_125[0],'.-')
-axb.plot(T_300_125[1],SAR_300_125[1],'.-')
-axb.plot(T_300_125[2],SAR_300_125[2],'.-')
+axb.plot(T_300_125[0],ESAR_300_125[0],'.-')
+axb.plot(T_300_125[1],ESAR_300_125[1],'.-')
+axb.plot(T_300_125[2],ESAR_300_125[2],'.-')
 
-axc.plot(T_300_150[0],SAR_300_150[0],'.-')
-axc.plot(T_300_150[1],SAR_300_150[1],'.-')
-axc.plot(T_300_150[2],SAR_300_150[2],'.-')
+axc.plot(T_300_150[0],ESAR_300_150[0],'.-')
+axc.plot(T_300_150[1],ESAR_300_150[1],'.-')
+axc.plot(T_300_150[2],ESAR_300_150[2],'.-')
 
-ax.set_title('SAR - 38 kA/m',loc='left')
-ax2.set_title('SAR - 47 kA/m',loc='left')
-ax3.set_title('SAR - 57 kA/m',loc='left')
+ax.set_title('ESAR - 38 kA/m',loc='left')
+ax2.set_title('ESAR - 47 kA/m',loc='left')
+ax3.set_title('ESAR - 57 kA/m',loc='left')
 ax3.set_xlabel("t (s)")
 axc.set_xlabel("T (°C)")
 
 for a in [ax,ax2,ax3,axa,axb,axc]:
     a.grid()
-    #a.legend(title='SAR (W/g)')
+    #a.legend(title='ESAR (W/g)')
 for a in [ax,ax2,ax3]:
-    a.set_ylabel("SAR (W/g)")
+    a.set_ylabel("ESAR (W/g)")
 
-ax.text(0.95,0.90,f'SAR = {SAR_100_prom:.2uS} W/g',
+ax.text(0.95,0.90,f'ESAR = {ESAR_100_prom:.2uS} W/g',
         ha='right',va='center',
         bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
         transform=ax.transAxes)
-ax2.text(0.95,0.90,f'SAR = {SAR_125_prom:.2uS} W/g',
+ax2.text(0.95,0.90,f'ESAR = {ESAR_125_prom:.2uS} W/g',
         ha='right',va='center',
         bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
         transform=ax2.transAxes)
-ax3.text(0.95,0.90,f'SAR = {SAR_150_prom:.2uS} W/g',
+ax3.text(0.95,0.90,f'ESAR = {ESAR_150_prom:.2uS} W/g',
         ha='right',va='center',
         bbox=dict(boxstyle="round", fc='C3',alpha=0.6,lw=1),
         transform=ax3.transAxes)    
 
-plt.suptitle('SAR vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
+plt.suptitle('ESAR vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')    
 plt.show()
 
 #%% Temp vs tiempo
@@ -357,12 +391,12 @@ plt.suptitle('Temperatura  vs t\nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$
 plt.show()
 #%% Ploteo comparativa ESAR ecSAR
 campo= [38 , 47 , 57]
-ESAR = [SAR_100_prom,SAR_125_prom,SAR_150_prom]
+ESAR = [ESAR_100_prom,ESAR_125_prom,ESAR_150_prom]
 ecSAR = [ecSAR_100,ecSAR_125,ecSAR_150]
 
-SAR_100_plot = [ufloat(np.mean(s),np.std(s)) for s in SAR_300_100 ]
-SAR_125_plot = [ufloat(np.mean(s),np.std(s)) for s in SAR_300_125 ]
-SAR_150_plot = [ufloat(np.mean(s),np.std(s)) for s in SAR_300_150 ]
+ESAR_100_plot = [ufloat(np.mean(s),np.std(s)) for s in ESAR_300_100 ]
+ESAR_125_plot = [ufloat(np.mean(s),np.std(s)) for s in ESAR_300_125 ]
+ESAR_150_plot = [ufloat(np.mean(s),np.std(s)) for s in ESAR_300_150 ]
 
 H_57= [57,57,57]
 H_47= [47,47,47]
@@ -385,7 +419,7 @@ ax.set_title('ESAR vs ecSAR \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')
 ax.grid()
 ax.legend(ncol=2)
 ax.set_xlabel("H (kA/m)")
-ax.set_ylabel("SAR (W/g)")
+ax.set_ylabel("ESAR (W/g)")
 plt.savefig('ESAR_vs_ecSAR_NF@citrato_reconc_15_gL.png',dpi=300)
 
 
@@ -556,7 +590,7 @@ plt.suptitle('Mag vs t/T \nNF@citrato_reconc 260203 - 15.0 g/L Fe$_3$O$_4$')
 plt.show()
 
 #%% Salvo todas las figuras
-for f in zip([fig1,fig2,fig3,fig4,fig5,fig6,fig7],['tau_vs_t&T','SAR_vs_t&T','templogs','Hc_vs_t&T','Mr_vs_t&T','dphi_vs_t&T','Mag_vs_t&T']):
+for f in zip([fig1,fig2,fig3,fig4,fig5,fig6,fig7],['tau_vs_t&T','ESAR_vs_t&T','templogs','Hc_vs_t&T','Mr_vs_t&T','dphi_vs_t&T','Mag_vs_t&T']):
     f[0].savefig('NF_citrato_reconc_300_'+f[1]+'.png')
 
 

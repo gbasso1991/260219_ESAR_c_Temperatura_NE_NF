@@ -63,9 +63,9 @@ un_solo_fondo=1
 resto_fondo=1
 templog = 1
 N_espiras_bob_captora=1
-nombre='*NF@citrato_conc 260203'
+nombre='*NF@cit'
 Analisis_de_Fourier = 1 # sobre las señales, imprime espectro de señal muestra
-N_armonicos_impares = 11
+N_armonicos_impares = 15
 concentracion =(15)*1e3 #[concentracion]= g/m^3 (1 g/l == 1e3 g/m^3) (Default = 10000 g/m^3)
 capsula_glucosa=0   # capsula para solventes organicos
 detector_ciclos_descartables=True #en funcion a Mag max para evitar guardar/promediar con ciclos in/out
@@ -125,6 +125,7 @@ print(f'''
       Concentracion: {concentracion/1000} g/l
       ''','\n','-'*60)
 
+
 #%%Defino listas para almacenar datos en cada iteracion
 long_arrays=[]
 Ciclos_eje_H = []
@@ -177,7 +178,7 @@ if todos==1: #Leo todos los archivos del directorio
     path_m = [os.path.join(directorio,f) for f in fnames_m] #todos los demas
 
     for idx_m, m in enumerate(fnames_m):
-        print(idx_m,'-',m)
+        print(str(idx_m).zfill(2),'-',m)
     print('.'*40)
     print('Archivos de fondo en el directorio:\n')
     for idx_f,f in enumerate(fnames_f):
@@ -210,7 +211,6 @@ for i in range(len(fnames_m)):
 
 
 #%% TEMPLOG --> FECHA POSTA E INTERPOLACION DE LA TEMPERATURA (18 Jul 24)
-
 # Levanto hora guardada en los archivos 
 Fechas_from_file = []
 Fechas_from_file_descancelacion=[]
@@ -220,7 +220,6 @@ for k in range(len(fnames_m)):
         fecha_in_file = f.readline()
         Fechas_from_file.append(fecha_in_file.split()[-1])
         
-#%%
 with open(path_m[-1], 'r') as f:
     fecha_in_file_f = f.readline().split()[-1]
     Fechas_from_file_descancelacion.append(fecha_in_file_f)
@@ -244,21 +243,30 @@ if templog:
 
         time_m = np.round(delta_0 + np.cumsum(time_delta),2)
         temp_m = np.array([temperatura_interpolada[np.flatnonzero(tiempo_interpolado==t)[0]] for t in time_m])
-
+        WRate= (temp_m[-1]-temp_m[0])/(time_m[-1]-time_m[0])
+        concentracion_gL = concentracion/1000
+        ecSAR= WRate*4186/concentracion_gL
+        
+        texto_templog = rf'$\Delta$t = {time_m[-1]-time_m[0]:.2f} s'+'\n'+f'$\Delta$T = {temp_m[-1]-temp_m[0]:.2f} °C'+f'\nWR = {WRate:.2f} °C/s\necSAR = {ecSAR:.2f} W/g'
+        
+        
         cmap = mpl.colormaps['viridis'] #'viridis'
         normalized_temperaturas = (np.array(temp_m) - np.array(temp_m).min()) / (np.array(temp_m).max() - np.array(temp_m).min())
         colors = cmap(normalized_temperaturas)
 
-        figtemp,ax=plt.subplots(figsize=(10,5.5),constrained_layout=True)
+        figtemp,ax=plt.subplots(figsize=(10,5),constrained_layout=True)
         ax.plot(t_full,T_full,'.-',label='Templog (Rugged O201)')
         ax.plot(tiempo_interpolado,temperatura_interpolada,'-',label='Temperatura interpolada')
         ax.scatter(time_m,temp_m,color=colors,label='Temperatura muestra')
-
+        ax.text(0.1,0.9,texto_templog,
+                bbox=dict(color='C4',alpha=0.8),
+                ha='left',va='top',
+                transform=ax.transAxes,fontsize=12)
         plt.xlabel('t (s)')
         plt.ylabel('T (°C)')
         plt.legend(loc='lower right')
         plt.grid()
-        plt.title('Temperatura de la muestra',fontsize=18)
+        plt.title('Temperatura - Warming Rate - ecSAR',fontsize=18)
         plt.savefig(os.path.join(output_dir,os.path.commonprefix(fnames_m)+'_templog.png'),dpi=300,facecolor='w')
         plt.show()
 
@@ -730,9 +738,12 @@ else:
     
 
 #%% PLOTEO TODOS LOS CICLOS RAW
-
 cmap = mpl.colormaps['viridis']
-norm = plt.Normalize(temp_m.min(), temp_m.max())# Crear un rango de colores basado en las temperaturas y el cmap
+if templog:
+    norm = plt.Normalize(temp_m.min(), temp_m.max())# Crear un rango de colores basado en las temperaturas y el cmap
+else:
+    norm = plt.Normalize(0, len(fnames_m)-1)# Normalizar sobre el rango de índices (0 a número de ciclos)
+
 if graficos['Ciclos_HM_m_todos']==1:
     fig = plt.figure(figsize=(9,7),constrained_layout=True)
     ax = fig.add_subplot(1,1,1)
@@ -753,11 +764,18 @@ if graficos['Ciclos_HM_m_todos']==1:
 
 plt.legend(title='Ciclos descartados',ncol=2,loc='best',fancybox=True)
 
-# # Configurar la barra de colores
-sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-sm.set_array([])  # Esto es necesario para que la barra de colores muestre los valores correctos
-plt.colorbar(sm, label='Temperatura',ax=ax)  # Agrega una etiqueta adecuada
-#lt.text(0.15,0.75,,fontsize=20,bbox=dict(color='tab:orange',alpha=0.7),transform=ax.transAxes)
+# Configurar la barra de colores para mostrar T o índices
+if templog:
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])  # Esto es necesario para que la barra de colores muestre los valores correctos
+    plt.colorbar(sm, label='Temperatura',ax=ax)  # Agrega una etiqueta adecuada
+
+else:
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = plt.colorbar(sm, label='indx', ax=ax)
+    cbar.set_ticks(range(len(fnames_m)))  # Mostrar ticks para cada ciclo
+    cbar.set_ticklabels(range(1, len(fnames_m)+1))  # Numerar desde 1
 plt.grid()
 plt.xlabel('H (kA/m)',fontsize=15)
 plt.ylabel('M (A/m)',fontsize=15)
@@ -970,8 +988,11 @@ ascii.write(resultados_out,output_file2,names=encabezado,overwrite=True,delimite
 np.savetxt(os.path.join(output_dir,'SAR_area.txt'),np.array(SAR_area),fmt='%e' )
 #%% PLOTEO TODOS LOS CICLOS FILTRADOS IMPAR
 cmap = mpl.colormaps['viridis']
-# Normalizar sobre el rango de índices (0 a número de ciclos)
-norm = plt.Normalize(0, len(fnames_m)-1)
+if templog:
+    norm = plt.Normalize(temp_m.min(), temp_m.max())# Crear un rango de colores basado en las temperaturas y el cmap
+else:
+    norm = plt.Normalize(0, len(fnames_m)-1)# Normalizar sobre el rango de índices (0 a número de ciclos)
+
 
 cuadro_1= fr'$\tau$ = {tau_all:.0f} ns'+f'\nSAR = {SAR_all:.0f} W/g\nH$_c$ = {Coercitividad_all:.1f} kA/m\nM$_r$ = {Remanencia_all:.1f} A/m'+'\nM$_{max}$'+f' = {Mag_max_emu:.1f}'+r' $\frac{emu}{g}$'
 
@@ -981,7 +1002,7 @@ if Analisis_de_Fourier==1:
     
     for i in range(len(fnames_m)):
         # Usar el índice normalizado para obtener el color
-        color = cmap(norm(i))
+        color = cmap(norm(temp_m[i]))
         plt.plot(Ciclos_eje_H[i]/1000, Ciclos_eje_M_filt[i], '-', color=color)
 
     plt.plot(Ciclo_descancelacion_H/1000, Ciclo_descancelacion_M_filt, '-', color='k', label='Descancelación')
@@ -993,12 +1014,18 @@ if Analisis_de_Fourier==1:
     
     plt.legend(loc='lower right', fancybox=True, ncol=2)
 
-    # Configurar la barra de colores para mostrar los índices
-    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm.set_array([])
-    cbar = plt.colorbar(sm, label='indx', ax=ax)
-    cbar.set_ticks(range(len(fnames_m)))  # Mostrar ticks para cada ciclo
-    cbar.set_ticklabels(range(1, len(fnames_m)+1))  # Numerar desde 1
+    # Configurar la barra de colores para mostrar T o índices
+    if templog:
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])  # Esto es necesario para que la barra de colores muestre los valores correctos
+        plt.colorbar(sm, label='Temperatura',ax=ax)  # Agrega una etiqueta adecuada
+    
+    else:
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])
+        cbar = plt.colorbar(sm, label='indx', ax=ax)
+        cbar.set_ticks(range(len(fnames_m)))  # Mostrar ticks para cada ciclo
+        cbar.set_ticklabels(range(1, len(fnames_m)+1))  # Numerar desde 1
 
     plt.text(0.8, 0.20, cuadro_1,
              fontsize=14, bbox=dict(color='tab:green', alpha=0.7), transform=ax.transAxes, ha='center')
@@ -1220,10 +1247,76 @@ else:
     plt.suptitle(r'H$_C$ - M$_R$ - $\chi_{M=0}$ - M$_{max}$',fontsize=15)
     plt.savefig(os.path.join(output_dir,os.path.commonprefix(list(fnames_m))+'_Hc_Mr_xi_vs_indx.png'),dpi=300,facecolor='w')
     
+
+
+# %%
+
+# %%#%% PLOTEO EVOLUCION DE TODOS LOS CICLOS FILTRADOS IMPAR
+cmap = mpl.colormaps['viridis']
+if templog:
+    norm = plt.Normalize(temp_m.min(), temp_m.max())# Crear un rango de colores basado en las temperaturas y el cmap
+else:
+    norm = plt.Normalize(0, len(fnames_m)-1)# Normalizar sobre el rango de índices (0 a número de ciclos)
+
+
+cuadro_1= fr'$\tau$ = {tau_all:.0f} ns'+f'\nSAR = {SAR_all:.0f} W/g\nH$_c$ = {Coercitividad_all:.1f} kA/m\nM$_r$ = {Remanencia_all:.1f} A/m'+'\nM$_{max}$'+f' = {Mag_max_emu:.1f}'+r' $\frac{emu}{g}$'
+
+if Analisis_de_Fourier==1:
+    fig = plt.figure(figsize=(13,5.57),constrained_layout=True)
+    ax = fig.add_subplot(1,1,1)
+    
+    for i in range(len(fnames_m)):
+        # Usar el índice normalizado para obtener el color
+        color = cmap(norm(temp_m[i]))
+        plt.plot(1.5*i+Ciclos_eje_H[i]/1000, Ciclos_eje_M_filt[i], '-', color=color)
+
+    plt.plot(1.5*len(fnames_m)+Ciclo_descancelacion_H/1000, Ciclo_descancelacion_M_filt, '-', color='k', label='Descancelación')
+    plt.plot(Ciclos_eje_H[0]/1000, Ciclos_eje_M_filt[0], '.-', lw=2.2, color='tab:blue', label=f'{fnames_m[0].split("_")[-1][-7:-4]}  {temp_m[0]} °C')
+    plt.plot(1.5*len(fnames_m)+Ciclos_eje_H[-1]/1000, Ciclos_eje_M_filt[-1], '.-', lw=2.2, color='tab:orange', label=f'{fnames_m[-1].split("_")[-1][-7:-4]}  {temp_m[-1]} °C')
+    
+    # if Ciclo_promedio:
+    #     plt.plot(H_prom/1000, M_prom, '-.', c='tab:red', label=f'Ciclo promedio ({Num_ciclos_m} ciclos)')
+    
+    plt.legend(loc='lower right', fancybox=True, ncol=2)
+
+    # Configurar la barra de colores para mostrar T o índices
+    if templog:
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])  # Esto es necesario para que la barra de colores muestre los valores correctos
+        plt.colorbar(sm, label='Temperatura',ax=ax)  # Agrega una etiqueta adecuada
+    
+    else:
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])
+        cbar = plt.colorbar(sm, label='indx', ax=ax)
+        cbar.set_ticks(range(len(fnames_m)))  # Mostrar ticks para cada ciclo
+        cbar.set_ticklabels(range(1, len(fnames_m)+1))  # Numerar desde 1
+
+    # plt.text(0.8, 0.20, cuadro_1,
+    #          fontsize=14, bbox=dict(color='tab:green', alpha=0.7), transform=ax.transAxes, ha='center')
+
+    plt.text(0.05, 0.9, f'{frec_nombre[0]/1000:>3.0f} kHz\n{round(np.mean(Campo_maximo)/1e3,2):>4.2f} kA/m',
+             fontsize=20, bbox=dict(color='tab:orange', alpha=0.7), 
+             transform=ax.transAxes, ha='left',va='top')
+    plt.axhline(y=0, color='k', linestyle='-', lw=0.8,zorder=2)
+    plt.axvline(x=0, color='k', linestyle='-', lw=0.8,zorder=-1)
+    plt.axvline(x=1.5*len(fnames_m), color='k', linestyle='-', lw=0.8,zorder=-1)
+    plt.grid(axis='y')
+    plt.xticks([])  # Oculta tanto ticks como etiquetas
+    #plt.xlabel('H (kA/m)', fontsize=15)
+    plt.ylabel('M (A/m)', fontsize=15)
+    plt.title(fecha_graf + f'   {N_armonicos_impares} arm impares', loc='left', fontsize=13)
+    plt.suptitle('Evolucion de ciclos de histéresis (filtrado impar)', fontsize=20)
+    plt.savefig(os.path.join(output_dir, os.path.commonprefix(list(fnames_m))+'_evolucion_ciclos_MH.png'), dpi=300, facecolor='w')
+
+    plt.show()
+    
+    
+figtemp    
 #%% Printeo Resultados del analisis
 print('='*50)
 print(f'Resultados analisis {fecha_graf}\n')
-print(f'Concentracion {concentracion/1000} g/L\n')
+print(f'Concentracion {concentracion_gL} g/L\n')
 
 print(f'''tau = {tau_all:.1f} ns
 SAR = {SAR_all:.0f} W/g
@@ -1233,14 +1326,14 @@ Campo Coercitivo = {Coercitividad_all:.2f} kA/m
 Mag Remanente = {Remanencia_all:.0f} A/m
 Mag maxima = {Mag_max_emu:.2f} emu/g
 Susceptibilidad a M=0 = {xi_all:.e}''')
+
+if templog:
+    print(f'\ndT = {temp_m[-1]-temp_m[0]:.2f} °C\ndt = {time_m[-1]-time_m[0]:.2f} s')
+    print(f'Raw Warming Rate = {WRate:.2f} °C/s')
+    print(f'ecSAR = {ecSAR:.0f} W/g')
+
 print('='*50)
 
 #%%%
 end_time = time.time()
 print(f'Tiempo de ejecución del script: {(end_time-start_time):6.3f} s.')
-
-
-
-# %%
-
-# %%
